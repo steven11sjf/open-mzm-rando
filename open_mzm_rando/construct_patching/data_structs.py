@@ -1,7 +1,8 @@
-from construct import (Struct, Int8ul, Int16ul)
+from construct import (Struct, Hex, Int8ul, Int16ul, Int32ul)
 
-from open_mzm_rando.construct_patching.rom_data_section import Pointer
 from open_mzm_rando.construct_patching import data_enums
+
+Pointer = Hex(Int32ul)
 
 ActiveScroll = Struct(
     SamusWithinScrollFlag = Int8ul,
@@ -98,7 +99,7 @@ BGPtrsAndDimensions = Struct(
     WidthOfBG1InBlocks=Int16ul,
     HeightOfBG1InBlocks=Int16ul,
     DecompressedBG2Ptr=Pointer,
-    WidthOfBG1InBlocks=Int16ul,
+    WidthOfBG2InBlocks=Int16ul,
     HeightOfBG2InBlocks=Int16ul,
     DecompressedClipdataPtr=Pointer,
     WidthOfClipdataInBlocks=Int16ul,
