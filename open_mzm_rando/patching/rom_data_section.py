@@ -1,7 +1,7 @@
 from construct import (Array, Bytes, Hex, Int8ul, Int16ul, Int32ul, Struct, Tell)
 
-from open_mzm_rando.construct_patching.data_structs import Pointer
-from open_mzm_rando.construct_patching import data_structs
+from open_mzm_rando.patching.data_structs import Pointer
+from open_mzm_rando.patching import data_structs
 
 # data courtesy of labk (https://labk.org/maps/app/?game=zm&region=u&map=data)
 

@@ -1,6 +1,6 @@
 from construct import (Struct, Hex, Int8ul, Int16ul, Int32ul)
 
-from open_mzm_rando.construct_patching import data_enums
+from open_mzm_rando.patching import data_enums
 
 Pointer = Hex(Int32ul)
 
