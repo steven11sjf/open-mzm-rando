@@ -1,12 +1,27 @@
 from pathlib import Path
 
 from open_mzm_rando.patching.ROM import ROM
+from open_mzm_rando.patch_pickups import patch_pickup
+from open_mzm_rando.patching.assembly_patcher import apply_asm_patches
+from open_mzm_rando.patching.tempdir_manager import MZM_TempDir
 
 def test_parse():
     path = Path("e:/Roms/GBA/MZMU.gba")
-    rom = ROM(path)
+    modified = Path("e:/Roms/GBA/MZMU_Randomized.gba")
 
-    print(f"Version: \"{rom.version}\"")
-    print("Area headers:")
-    for header in rom.area_header_offsets:
-        print(f"\t{header}")
+    temp_dir = MZM_TempDir(path, modified)
+
+    apply_asm_patches(temp_dir)
+
+    rom = ROM(temp_dir.get_temp_rom())
+
+    # print(f"Version: \"{rom.version}\"")
+    # print("Area headers:")
+    # for header in rom.area_header_offsets:
+    #     print(f"\t{header}")
+    
+    #patch_pickup(rom, 9, "Power Bomb Tank")
+    patch_pickup(rom, 2, "Super Missile Tank")
+
+    rom.close()
+    temp_dir.close()

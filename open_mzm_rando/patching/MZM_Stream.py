@@ -10,10 +10,18 @@ class MZM_Stream:
     def seek(self, offset: int):
         self.stream.seek(offset)
     
+    def seek_from_current(self, offset: int):
+        self.stream.seek(self.stream.tell() + offset)
+    
+    def follow_pointer(self):
+        """Goes to the pointer highlighted"""
+        ptr = self.read_Pointer()
+        self.seek(ptr)
+
     def _read(self, size: int) -> bytes:
         return self.stream.read(size)
     
-    def _write(self, data: bytes) -> bytes:
+    def _write(self, data: bytes) -> int:
         return self.stream.write(data)
 
     def read_UInt8(self) -> int:

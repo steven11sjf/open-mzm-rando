@@ -15,8 +15,11 @@ class ROM:
     area_header_offsets: list
 
     def __init__(self, filepath: Path):
+
+        # store data in new file
         self.path = filepath
-        self.stream = MZM_Stream(open(self.path, "rb"))
+        self.stream = MZM_Stream(open(self.path, "rb+"))
+        self.stream.seek(0)
 
         self.get_version()
         self._get_area_header_offsets()
@@ -40,6 +43,9 @@ class ROM:
 
         # parse area headers (0=brinstar, 1=kraid, ..., 6=chozodia)
         self.area_header_offsets = [ (i, hex(self.stream.read_Pointer())) for i in range(7) ]
+    
+    def close(self):
+        self.stream.stream.close()
 
 # ROM_HEADER = Struct(
 #     _unk = Bytes(0xA0),
