@@ -1,7 +1,8 @@
-import os
 import shutil
 import tempfile
 from pathlib import Path
+
+from open_mzm_rando.logger import LOG
 
 class MZM_TempDir:
     rom_input: Path
@@ -21,6 +22,8 @@ class MZM_TempDir:
         self.rom_temp = Path(self.temp_dir, "MZM.gba")
         shutil.copyfile(rom_input, self.rom_temp)
 
+        LOG.info("Created temp dir %s", self.temp_dir)
+
     def get_temp_rom(self) -> Path:
         if self.is_closed is True:
             raise ValueError(f"Temporary directory {self.temp_dir} has already been closed!")
@@ -32,6 +35,7 @@ class MZM_TempDir:
         if self.is_closed is True:
             raise ValueError(f"Temporary directory {self.temp_dir} has already been closed!")
         
+        LOG.info("Reassigned temp ROM from %s to %s", self.rom_temp, new_rom)
         self.rom_temp = new_rom
 
     def close(self):
@@ -42,3 +46,4 @@ class MZM_TempDir:
         shutil.copyfile(self.rom_temp, self.rom_output)
         shutil.rmtree(self.temp_dir)
         self.is_closed = True
+        LOG.info("Removed temp dir %s", self.temp_dir)

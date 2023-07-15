@@ -21,6 +21,8 @@ def RLE_seek_target(rom: ROM, target: int) -> RLEResult:
                 return RLEResult.COMPRESSED
             stream.read_UInt8() # consume next tile, we don't care what it is
         else:
+            if byte == 0:
+                raise ValueError("RLE seek encountered a run of zero - check your offsets!")
             # read the next `byte` bytes
             if count + byte < target:
                 count += byte

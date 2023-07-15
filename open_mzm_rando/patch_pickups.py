@@ -1,11 +1,10 @@
 import dataclasses
 
-from enum import Enum
-
 from open_mzm_rando.patching.ROM import ROM
 from open_mzm_rando.patching.Room import Room
 from open_mzm_rando.patching.run_length_encoding import RLEResult, RLE_seek_target
 from open_mzm_rando.locations import ItemType, Location, get_location_by_index
+from open_mzm_rando.logger import LOG
 
 @dataclasses.dataclass(frozen=True)
 class Pickup:
@@ -39,7 +38,9 @@ ALL_ITEMS: dict[str, Pickup] = {
 def patch_tank_to_tank(rom: ROM, location: Location, item: Pickup):
     # patch BG1 (main tile layer) if decompressed
     if not location.hidden:
-        Room.get_room(rom, location.area, location.room).get_bg1(rom)
+        room = Room.get_room(rom, location.area.value, location.room)
+        room.get_bg1(rom)
+
         width = rom.stream.read_UInt8()
         rom.stream.read_UInt16() # skip height and unk variable
         bg1_type = RLE_seek_target(rom, location.y * width + location.x)
@@ -51,15 +52,15 @@ def patch_tank_to_tank(rom: ROM, location: Location, item: Pickup):
             rom.stream.write_UInt8(item.tile_id)
 
     # patch clip data
-    Room.get_room(rom, location.area, location.room).get_clip_data(rom)
-    print(f"Clipdata: {hex(rom.stream.stream.tell())}")
+    room = Room.get_room(rom, location.area.value, location.room)
+    room.get_clip_data(rom)
+
     width = rom.stream.read_UInt8()
     rom.stream.read_UInt16() # skip height and unk variable
     clip_type = RLE_seek_target(rom, location.y * width + location.x)
-    print(f"CLIPDATA AT {hex(rom.stream.stream.tell())}")
     
     if clip_type == RLEResult.DECOMPRESSED:
-        #rom.stream.seek_from_current(1)
+        rom.stream.seek_from_current(1)
         if location.hidden:
             rom.stream.write_UInt8(item.clipdata + 0x10) # hidden tank clipdata = normal clipdata + 0x10
         else:
@@ -71,6 +72,7 @@ def patch_tank_to_tank(rom: ROM, location: Location, item: Pickup):
 def patch_pickup(rom: ROM, location_idx: int, item: str):
     loc = get_location_by_index(location_idx)
     new_pickup = ALL_ITEMS[item]
+    LOG.info("Patching location %i (area %s room %s) to item %s", loc.rdv_index, loc.area.name, hex(loc.room), item)
 
     if loc.type is ItemType.EQUIPMENT:
         raise ValueError("Patching from non-tanks is not supported!")

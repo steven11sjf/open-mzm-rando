@@ -1,3 +1,3 @@
-from open_mzm_rando.mzm_patcher import test_parse
+from open_mzm_rando.cli import main
 
-test_parse()
+main()

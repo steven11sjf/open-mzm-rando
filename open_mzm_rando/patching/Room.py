@@ -1,35 +1,15 @@
 from __future__ import annotations
 import dataclasses
 
+from open_mzm_rando.patching.base_component import BaseComponent
 from open_mzm_rando.patching.ROM import ROM
-
-
-@dataclasses.dataclass()
-class RoomEntry:
-    pointer: int
-    region: int
-    room: int
-    BG0: int
-    BG1: int
-    BG2: int
-    BG3: int
-    clipdata: int
-    map_x: int
-    map_y: int
-
-    def seek_clip_data(self, rom: ROM):
-        rom.stream.seek(self.clipdata)
-    
-    def seek_bg1(self, rom: ROM):
-        rom.stream.seek(self.BG1)
 
 
 # list of all RoomEntry
 ROOMS: dict[str, Room] = {}
 
-@dataclasses.dataclass()
-class Room:
-    pointer: int # pointer to room
+@dataclasses.dataclass(kw_only=True)
+class Room(BaseComponent):
     region: int # enum for region (0=brinstar, etc)
     room: int # index of room in region
     BG0: int # pointer to BG0 (foreground), offset +0x8
@@ -47,7 +27,9 @@ class Room:
         """seeks stream from anywhere to the requested RoomEntry; returns a pointer to the room"""
         room_key = f"a{region}r{room}"
         if room_key in ROOMS.keys():
-            return ROOMS[room_key]
+            room = ROOMS[room_key]
+            rom.stream.seek(room.address)
+            return room
         else:
             return Room._create_room(rom, region, room, room_key)
     
@@ -63,7 +45,9 @@ class Room:
     @staticmethod
     def _create_room(rom: ROM, region: int, room: int, key: str) -> Room:
         # parse data
-        rom.stream.seek(int(rom.area_header_offsets[region][1], base=16) + (room * 0x3C))
+        rom.get_region_header(region)
+        rom.stream.seek_from_current(room * 0x3C)
+        
         ptr = rom.stream.stream.tell()
         rom.stream._read(8) # skip
         bg0 = rom.stream.read_Pointer()
@@ -76,8 +60,8 @@ class Room:
         map_y = rom.stream.read_UInt8()
 
         # make entry
-        new_entry = Room(
-            pointer=ptr,
+        new_room = Room(
+            address=ptr,
             region=region,
             room=room,
             BG0=bg0,
@@ -88,5 +72,6 @@ class Room:
             map_x=map_x,
             map_y=map_y
         )
-        ROOMS[key] = new_entry
-        return new_entry
+        ROOMS[key] = new_room
+        rom.stream.seek(new_room.address)
+        return new_room

@@ -3,11 +3,12 @@ import shutil
 import tempfile
 from pathlib import Path
 
+from open_mzm_rando.logger import LOG
 from open_mzm_rando.patching.tempdir_manager import MZM_TempDir
 
 
 def apply_asm_patches(tempdir: MZM_TempDir):
-    print(f"Applying armips to {tempdir.get_temp_rom()}")
+    LOG.info("Applying armips to temp rom %s", tempdir.get_temp_rom())
     initial_cwd = os.getcwd()
     asm_dir = Path((Path(os.path.realpath(os.path.dirname(__file__))).parent), "asm")
     
