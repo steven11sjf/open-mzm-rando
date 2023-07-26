@@ -4,6 +4,7 @@ import dataclasses
 class Offsets:
     AreaHeaderPtr: int
     TilesetPtr: int
+    Tilemap400Ptr: int
     AnimTilesetPtr: int
     AnimGfxPtr: int
     TankGfxOffset: int
@@ -42,6 +43,7 @@ OffsetForVersion = {
     "ZEROMISSIONEBMXE": Offsets(
         AreaHeaderPtr=0x56480,
         TilesetPtr=0x56250,
+        Tilemap400Ptr=0x56318,
         AnimTilesetPtr=0x5E200,
         AnimGfxPtr=0x5E1F8,
         TankGfxOffset=0x752AB4,

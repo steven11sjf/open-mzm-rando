@@ -12,6 +12,7 @@ ROOMS: dict[str, Room] = {}
 class Room(BaseComponent):
     region: int # enum for region (0=brinstar, etc)
     room: int # index of room in region
+    ts_num: int # tileset index
     BG0: int # pointer to BG0 (foreground), offset +0x8
     BG1: int # pointer to BG1 (main layer), offset +0xC
     BG2: int # pointer to BG2 (behind main layer), offset +0x10
@@ -49,7 +50,8 @@ class Room(BaseComponent):
         rom.stream.seek_from_current(room * 0x3C)
         
         ptr = rom.stream.stream.tell()
-        rom.stream._read(8) # skip
+        tsnum = rom.stream.read_UInt8()
+        rom.stream._read(7) # skip
         bg0 = rom.stream.read_Pointer()
         bg1 = rom.stream.read_Pointer()
         bg2 = rom.stream.read_Pointer()
@@ -64,6 +66,7 @@ class Room(BaseComponent):
             address=ptr,
             region=region,
             room=room,
+            ts_num=tsnum,
             BG0=bg0,
             BG1=bg1,
             BG2=bg2,

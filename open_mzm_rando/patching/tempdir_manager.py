@@ -44,6 +44,7 @@ class MZM_TempDir:
             raise ValueError(f"Temporary directory {self.temp_dir} has already been closed!")
         
         shutil.copyfile(self.rom_temp, self.rom_output)
+        LOG.info("Copied finished ROM to %s", self.rom_output)
         shutil.rmtree(self.temp_dir)
         self.is_closed = True
         LOG.info("Removed temp dir %s", self.temp_dir)

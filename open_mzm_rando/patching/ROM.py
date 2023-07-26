@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from open_mzm_rando.patching.appendable_data import AppendedDataManager
 from open_mzm_rando.patching.offsets import Offsets, OffsetForVersion
 from open_mzm_rando.patching.MZM_Stream import MZM_Stream
 
@@ -8,6 +9,8 @@ class ROM:
     version: str
     offsets: Offsets
     stream: MZM_Stream
+    appended: AppendedDataManager
+    next_empty_tileset: int
     area_header_offsets: list
 
     def __init__(self, filepath: Path):
@@ -15,7 +18,9 @@ class ROM:
         # store data in new file
         self.path = filepath
         self.stream = MZM_Stream(open(self.path, "rb+"))
+        self.appended = AppendedDataManager(self.stream)
         self.stream.seek(0)
+        self.next_empty_tileset = 0x4F
 
         self.get_version()
         self._get_area_header_offsets()
@@ -40,6 +45,10 @@ class ROM:
 
     def get_tilesets(self):
         self.stream.follow_pointer(self.offsets.TilesetPtr)
+    
+    def next_tileset(self):
+        self.next_empty_tileset += 1
+        return self.next_empty_tileset - 1
 
     def get_region_header(self, region: int):
         self.stream.follow_pointer(self.offsets.AreaHeaderPtr)
@@ -47,4 +56,5 @@ class ROM:
         self.stream.follow_pointer()
     
     def close(self):
+        self.appended.write_all()
         self.stream.stream.close()
