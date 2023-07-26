@@ -36,7 +36,7 @@ def patch_extracted(input_path: Path, output_path: Path, configuration: dict):
 
     temp_dir = MZM_TempDir(input_path, output_path)
 
-    apply_asm_patches(temp_dir)
+    apply_asm_patches(temp_dir, configuration["asm"])
 
     rom = ROM(temp_dir.get_temp_rom())
 

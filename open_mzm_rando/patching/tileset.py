@@ -101,7 +101,8 @@ class Tileset:
         bg1_num = self.tilemap.find_empty_spot(tile_val)
 
         # fix Tilemap400
-        rom.stream.seek(rom.offsets.Tilemap400Ptr + (0xD0 + equipment_id) * 8)
+        rom.stream.follow_pointer(rom.offsets.Tilemap400Ptr)
+        rom.stream.seek_from_current((0xD0 + equipment_id) * 8)
         rom.stream.write_UInt16(tile_val)
         rom.stream.write_UInt16(tile_val+1)
         rom.stream.write_UInt16(tile_val+2)
