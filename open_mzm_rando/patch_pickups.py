@@ -142,10 +142,6 @@ ALL_ITEMS: dict[str, Pickup] = {
     
 }
 
-ORIG_TILEMAP_COUNT = 0x4F
-MAX_TILEMAP_COUNT = ORIG_TILEMAP_COUNT + 0xC
-curr_tilemap = ORIG_TILEMAP_COUNT
-
 def patch_item_clipdata(rom: ROM, location: Location, item: Pickup):
     room = Room.get_room(rom, location.area.value, location.room)
     room.get_clip_data(rom)

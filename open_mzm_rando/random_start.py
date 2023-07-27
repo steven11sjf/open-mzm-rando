@@ -13,8 +13,6 @@ def random_start_to_music(config: dict[str, str]):
 
     region = config["region"]
     door = config["door"]
-    if type(door) == int:
-        door = hex(door)
     region_hex = hex(Region.get(region))
     
     return {

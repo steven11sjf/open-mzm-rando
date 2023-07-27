@@ -1,0 +1,111 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "format": "uri"
+        },
+        "configuration_identifier": {
+            "type": "string",
+            "description": "An unique identifier for this configuration. Only save files created with this identifier can be loaded."
+        },
+        "starting_location": {
+            "type": "object",
+            "description": "A region and door, if using a non-vanilla starting location",
+            "properties": {
+                "region": {
+                    "$ref": "#/$defs/region_name"
+                },
+                "door": {
+                    "type": "string",
+                    "description": "The hexadecimal representation for the desired door in the region",
+                    "pattern": "^0x[0-9a-fA-F]*$"
+                }
+            },
+            "required": [
+                "region",
+                "door"
+            ]
+        },
+        "pickups": {
+            "type": "array",
+            "description": "A list of all pickup replacements",
+            "maxItems": 100,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "index": {
+                        "type": "integer",
+                        "description": "The index for the original location, found in locations.py",
+                        "minimum": 0,
+                        "maximum": 99
+                    },
+                    "item_name": {
+                        "$ref": "#/$defs/item_id"
+                    }
+                },
+                "required": [
+                    "index",
+                    "item_name"
+                ]
+            }
+        }
+    },
+    "required": [
+        "pickups"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+        "region_name": {
+            "type": "string",
+            "enum": [
+                "Brinstar",
+                "Kraid",
+                "Norfair",
+                "Ridley",
+                "Tourian",
+                "Crateria",
+                "Chozodia"
+            ]
+        },
+        "item_id": {
+            "type": "string",
+            "enum": [
+                "Missile Tank",
+                "Super Missile Tank",
+                "Power Bomb Tank",
+                "Energy Tank",
+                "Long Beam",
+                "Charge Beam",
+                "Ice Beam",
+                "Wave Beam",
+                "Plasma Beam",
+                "Bomb",
+                "Varia Suit",
+                "Gravity Suit",
+                "Morph Ball",
+                "Speedbooster",
+                "Hi-Jump Boots",
+                "Screw Attack",
+                "Space Jump",
+                "Power Grip"
+            ]
+        },
+        "position": {
+            "type": "object",
+            "properties": {
+                "x": {
+                    "type": "number"
+                },
+                "y": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "x",
+                "y"
+            ]
+        }
+    }
+}

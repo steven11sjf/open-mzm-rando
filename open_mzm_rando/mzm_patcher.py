@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 from open_mzm_rando.logger import LOG
@@ -6,8 +7,16 @@ from open_mzm_rando.patch_pickups import patch_pickup
 from open_mzm_rando.patching.assembly_patcher import apply_asm_patches
 from open_mzm_rando.patching.tempdir_manager import MZM_TempDir
 from open_mzm_rando.random_start import random_start_to_music
+from open_mzm_rando.validator_with_default import DefaultValidatingDraft7Validator
 
 
+def _read_schema():
+    with Path(__file__).parent.joinpath("files", "schema.json").open() as f:
+        return json.load(f)
+
+def validate(configuration: dict):
+    DefaultValidatingDraft7Validator(_read_schema()).validate(configuration)
+    
 def create_asm_replacements(temp_dir: MZM_TempDir, config: dict) -> dict[str, str]:
     # default values
     replacements = {
@@ -29,7 +38,7 @@ def create_asm_replacements(temp_dir: MZM_TempDir, config: dict) -> dict[str, st
 def patch_extracted(input_path: Path, output_path: Path, configuration: dict):
     LOG.info("Will patch files from %s", input_path)
 
-    # TODO validate schema
+    validate(configuration)
 
     temp_dir = MZM_TempDir(input_path, output_path)
 
