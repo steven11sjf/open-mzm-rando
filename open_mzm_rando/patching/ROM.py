@@ -17,7 +17,7 @@ class ROM:
 
         # store data in new file
         self.path = filepath
-        self.stream = MZM_Stream(open(self.path, "rb+"))
+        self.stream = MZM_Stream(open(self.path.as_posix(), "rb+"))
         self.appended = AppendedDataManager(self.stream)
         self.stream.seek(0)
         self.next_empty_tileset = 0x4F

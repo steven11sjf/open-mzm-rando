@@ -1,18 +1,25 @@
+import dataclasses
+import json
+from pathlib import Path
 
+from open_mzm_rando.constants import Region
 
-MusicTracks = {
-    "Brinstar": "0x0",
-    "Save Room": "0x3",
-    "Norfair": "0x6",
-    "Kraid": "0x7",
-    "Gate to Tourian": "0xA",
-    "Map Room": "0xC",
-    "Chozo Ruins": "0xD",
-    "Crateria 2": "0xE",
-    "Crateria 3": "0xF",
-    "Ridley": "0x32",
-    "Tourian": "0x3B",
-    "Mothership": "0x46",
-    "Crateria 1": "0x50",
+def _get_files() -> Path:
+    return Path(__file__).parent.joinpath("files")
+
+def random_start_to_music(config: dict[str, str]):
+    json_data = _get_files().joinpath("door_to_music.json").read_text()
+    music = json.loads(json_data)
+
+    region = config["region"]
+    door = config["door"]
+    if type(door) == int:
+        door = hex(door)
+    region_hex = hex(Region.get(region))
     
-}
+    return {
+        "RandomStartEnabled": "1",
+        "StartingArea": region_hex,
+        "StartingDoor": door,
+        "StartingMusic": music[region][door]
+    }

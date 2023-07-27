@@ -5,29 +5,24 @@ from open_mzm_rando.patching.ROM import ROM
 from open_mzm_rando.patch_pickups import patch_pickup
 from open_mzm_rando.patching.assembly_patcher import apply_asm_patches
 from open_mzm_rando.patching.tempdir_manager import MZM_TempDir
+from open_mzm_rando.random_start import random_start_to_music
 
 
-def test_parse():
-    path = Path("e:/Roms/GBA/MZMU.gba")
-    modified = Path("e:/Roms/GBA/MZMU_Randomized.gba")
+def create_asm_replacements(temp_dir: MZM_TempDir, config: dict) -> dict[str, str]:
+    # default values
+    replacements = {
+        "InitialRom": f'"{temp_dir.rom_temp.absolute().as_posix()}"',
+        "FinalRom": f'"{temp_dir.temp_dir.joinpath("MZM_PATCHED.gba").absolute().as_posix()}"',
+        "RandomStartEnabled": "0",
+        "StartingArea": "0x0",
+        "StartingDoor": "0x0",
+        "StartingMusic": "0x0"
+    }
 
-    temp_dir = MZM_TempDir(path, modified)
+    if "starting_location" in config:
+        replacements.update(random_start_to_music(config["starting_location"]))
 
-    apply_asm_patches(temp_dir)
-
-    rom = ROM(temp_dir.get_temp_rom())
-
-    # print(f"Version: \"{rom.version}\"")
-    # print("Area headers:")
-    # for header in rom.area_header_offsets:
-    #     print(f"\t{header}")
-    
-    patch_pickup(rom, 9, "Power Bomb Tank")
-    patch_pickup(rom, 2, "Super Missile Tank")
-    patch_pickup(rom, 9, "Super Missile Tank")
-
-    rom.close()
-    temp_dir.close()
+    return replacements
 
 def patch_extracted(input_path: Path, output_path: Path, configuration: dict):
     LOG.info("Will patch files from %s", input_path)
@@ -36,7 +31,9 @@ def patch_extracted(input_path: Path, output_path: Path, configuration: dict):
 
     temp_dir = MZM_TempDir(input_path, output_path)
 
-    apply_asm_patches(temp_dir, configuration["asm"])
+    armips_replacements = create_asm_replacements(temp_dir, configuration)
+
+    apply_asm_patches(temp_dir, armips_replacements)
 
     rom = ROM(temp_dir.get_temp_rom())
 

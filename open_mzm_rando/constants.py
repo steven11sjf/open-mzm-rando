@@ -8,3 +8,9 @@ class Region(Enum):
     TOURIAN=4
     CRATERIA=5
     CHOZODIA=6
+
+    @staticmethod
+    def get(region_name: str):
+        for reg in Region:
+            if reg.name == region_name.upper():
+                return reg.value
