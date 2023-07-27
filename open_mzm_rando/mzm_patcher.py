@@ -21,6 +21,8 @@ def create_asm_replacements(temp_dir: MZM_TempDir, config: dict) -> dict[str, st
 
     if "starting_location" in config:
         replacements.update(random_start_to_music(config["starting_location"]))
+        LOG.info("Starting location set to %s door %s", 
+                 config["starting_location"]["region"], replacements["StartingDoor"])
 
     return replacements
 

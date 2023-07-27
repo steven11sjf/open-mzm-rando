@@ -56,8 +56,6 @@ class Tilemap(BaseComponent, AppendableData):
         for i in range(blockNum, 0x50):
             offset = i*4+1
             if self.data[offset:offset+4] == [0x40, 0x40, 0x40, 0x40]:
-                LOG.info("Found empty spot at %i (%i) - data is [%i,%i,%i,%i]", i, offset, 
-                         self.data[offset], self.data[offset+1], self.data[offset+2], self.data[offset+3])
                 self.data[offset] = tileVal
                 self.data[offset+1] = tileVal+1
                 self.data[offset+2] = tileVal+2

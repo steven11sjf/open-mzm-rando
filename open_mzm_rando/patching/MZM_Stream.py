@@ -28,9 +28,6 @@ class MZM_Stream:
         return self.stream.read(size)
     
     def _write(self, data: bytes) -> int:
-        if self.stream.tell() == 0x569b0:
-            LOG.info("Writing %s to %s", str([hex(d) for d in data]), self.stream.tell())
-            LOG.info("".join(traceback.format_stack()))
         return self.stream.write(data)
 
     def read_UInt8(self) -> int:

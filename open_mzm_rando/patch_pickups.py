@@ -147,10 +147,8 @@ MAX_TILEMAP_COUNT = ORIG_TILEMAP_COUNT + 0xC
 curr_tilemap = ORIG_TILEMAP_COUNT
 
 def patch_item_clipdata(rom: ROM, location: Location, item: Pickup):
-    LOG.info("Patching clipdata for %i to clip %s", location.rdv_index, hex(item.clipdata))
     room = Room.get_room(rom, location.area.value, location.room)
     room.get_clip_data(rom)
-    LOG.info("CLIP for location %i at %s", location.rdv_index, hex(rom.stream.stream.tell()))
 
     width = rom.stream.read_UInt8()
     rom.stream.read_UInt16() # skip height and unk variable
@@ -169,7 +167,6 @@ def patch_item_clipdata(rom: ROM, location: Location, item: Pickup):
 def patch_item_bg1(rom: ROM, location: Location, bg1_val: int):
     room = Room.get_room(rom, location.area.value, location.room)
     room.get_bg1(rom)
-    LOG.info("BG1 for location %i at %s", location.rdv_index, hex(rom.stream.stream.tell()))
     width = rom.stream.read_UInt8()
     rom.stream.read_UInt16() # skip height and unk variable
     bg1_type = RLE_seek_target(rom, location.y * width + location.x)
@@ -191,7 +188,6 @@ def patch_tank_to_tank(rom: ROM, location: Location, item: Pickup):
 
 def patch_tank_to_ability(rom: ROM, location: Location, item: Pickup):
     room = Room.get_room(rom, location.area.value, location.room)
-    LOG.info("ROOM OFFSET %s", hex(room.address))
     # modify tileset
     ts = Tileset.get_tileset(rom, room.ts_num)
     bg1_val = ts.add_equipment(rom, item.equipment_id, item.palette)

@@ -68,7 +68,6 @@ class AppendedDataManager:
         if size <= asset.orig_size:
             # write in place
             self.stream.seek(asset.orig_address)
-            LOG.info("Writing %s to %s", type(asset), hex(asset.orig_address))
             self.stream._write(binary)
             return asset.orig_address
         else:

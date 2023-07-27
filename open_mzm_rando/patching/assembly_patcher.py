@@ -14,7 +14,7 @@ def get_base_replacements() -> dict[str, Any]:
     }
 
 def apply_asm_patches(tempdir: MZM_TempDir, replacements: dict[str, str]):
-    LOG.info("Applying armips to temp rom %s", tempdir.get_temp_rom())
+    LOG.info("Applying armips patches to temp rom %s", tempdir.get_temp_rom())
     initial_cwd = os.getcwd()
     asm_dir = Path((Path(os.path.realpath(os.path.dirname(__file__))).parent), "asm")
 
@@ -26,7 +26,6 @@ def apply_asm_patches(tempdir: MZM_TempDir, replacements: dict[str, str]):
 
     # chdir to open_mzm_rando/asm and run armips
     os.chdir(asm_dir)
-    print(os.getcwd())
     os.system(f"{Path(asm_dir, 'armips', 'armips.exe')} {asm_main_file.as_posix()}")
     
     # update temp rom to point to MZM_PATCHED.gba and chdir back
@@ -39,7 +38,6 @@ def replace_main_asm(asm_config: dict[str, str]):
     main_asm = main_asm_path.read_text()
 
     for key,content in asm_config.items():
-        print(f"{key}: {content}")
         main_asm = main_asm.replace(f'TEMPLATE("{key}")', content)
     
     unknown_templates = re.findall(r'TEMPLATE\("([^"]+)"\)', main_asm)
