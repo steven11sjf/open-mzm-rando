@@ -1,6 +1,7 @@
 import dataclasses
 
 from enum import Enum
+from open_mzm_rando.constants import Region
 
 class ItemType(Enum):
     EQUIPMENT = "Equipment"
@@ -9,7 +10,7 @@ class ItemType(Enum):
 
 @dataclasses.dataclass(frozen=True)
 class Location:
-    area: int
+    area: Region
     room: int
     x: int
     y: int
@@ -19,7 +20,7 @@ class Location:
 
 ALL_LOCATIONS: list[Location] = [
     Location(
-        area=0,
+        area=Region.BRINSTAR,
         room=0,
         x=11,
         y=27,
@@ -28,7 +29,7 @@ ALL_LOCATIONS: list[Location] = [
         hidden=False
     ),
     Location(
-        area=0,
+        area=Region.BRINSTAR,
         room=0x1,
         x=13,
         y=7,
@@ -37,7 +38,7 @@ ALL_LOCATIONS: list[Location] = [
         hidden=False
     ),
     Location(
-        area=0,
+        area=Region.BRINSTAR,
         room=0x2,
         x=29,
         y=2,
@@ -46,7 +47,7 @@ ALL_LOCATIONS: list[Location] = [
         hidden=True
     ),
     Location(
-        area=0,
+        area=Region.BRINSTAR,
         room=0xC,
         x=54,
         y=6,
