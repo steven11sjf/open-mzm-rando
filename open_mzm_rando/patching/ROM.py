@@ -40,6 +40,21 @@ class ROM:
         self.next_empty_tileset += 1
         return self.next_empty_tileset - 1
 
+    def get_sprite_gfx_pointer(self, sprite_id: int):
+        self.stream.follow_pointer(self.offsets.SpriteGfxPtr)
+        self.stream.seek_from_current((sprite_id - 0x10) * 4)
+        return self.stream.stream.tell()
+    
+    def get_sprite_palette_pointer(self, sprite_id: int):
+        self.stream.follow_pointer(self.offsets.SpritePalettePtr)
+        spp_off = self.stream.stream.tell()
+        sprid_off = (sprite_id - 0x10) * 4
+        print(f"%% sprid_off = {sprid_off}")
+        self.stream.seek_from_current((sprite_id - 0x10) * 4)
+        print(f"%% offset traveled = {hex(self.stream.stream.tell() - spp_off)}")
+        print(f"%% final addy = {hex(self.stream.stream.tell())}")
+        return self.stream.stream.tell()
+
     def get_region_header(self, region: int):
         self.stream.follow_pointer(self.offsets.AreaHeaderPtr)
         self.stream.seek_from_current(region * 0x4)

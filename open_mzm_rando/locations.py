@@ -17,6 +17,7 @@ class Location:
     rdv_index: int
     type: ItemType
     hidden: bool
+    orig_item: str = ""
 
 ALL_LOCATIONS: list[Location] = [
     Location(
@@ -26,7 +27,8 @@ ALL_LOCATIONS: list[Location] = [
         y=27,
         rdv_index=0,
         type=ItemType.EQUIPMENT,
-        hidden=False
+        hidden=False,
+        orig_item="Morph Ball"
     ),
     Location(
         area=Region.BRINSTAR,

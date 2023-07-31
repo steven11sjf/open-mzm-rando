@@ -40,6 +40,7 @@ class MZM_Stream:
         return int.from_bytes(self._read(2), 'little', signed=False)
     
     def write_UInt16(self, val: int):
+        LOG.info("Writing %i (%s) to %s", val, hex(val), hex(self.stream.tell()))
         self._write(val.to_bytes(2, 'little', signed=False))
 
     def read_UInt32(self) -> int:

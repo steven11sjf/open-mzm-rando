@@ -79,8 +79,9 @@ class AppendedDataManager:
     def _write_to_open_region(self, pointers: list[int], bytes: bytes) -> int:
         # find the smallest data region that will fit this data
         region: FreeRegion = None
+        length = len(bytes)
         for dr in self.free_regions:
-            if len(bytes) <= dr.size:
+            if length <= dr.size:
                 region = dr
                 break
         
