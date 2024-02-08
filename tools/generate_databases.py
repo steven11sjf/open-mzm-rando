@@ -1,3 +1,4 @@
+import argparse
 import dataclasses
 from pathlib import Path
 import json
@@ -7,9 +8,6 @@ from open_mzm_rando.patching.Room import Room
 from open_mzm_rando.patching.run_length_encoding import RLE_seek_target, RLEResult
 
 
-ROM_PATH = "e:/Roms/GBA/MF.gba" # Put your path here!
-ROOM_NAME_JSON: str = "d:/randovania-dev/mzm_db_dumps/area_names_dict.json" # renames rooms to provided names
-DUMP_PATH = "d:/randovania-dev/mzm_db_dumps" # directory db dumps are sent to
 
 # consts
 TILE_SIZE_RDV = 16.0 # rdv units per tile
@@ -76,14 +74,14 @@ AREA_DATA = {
         door_count=0x73,
     ),
     "Sector2": AreaData(
-        name="Sector2",
+        name="Sector 2",
         idx=2,
         room_count=0x3d,
         door_offset=0x3c0f48,
         door_count=0x92,
     ),
     "Sector3": AreaData(
-        name="Sector3",
+        name="Sector 3",
         idx=3,
         room_count=0x27,
         door_offset=0x3c162c,
@@ -128,17 +126,37 @@ DOOR_CLIPS = {
     # 0x20: "Door Transition",
     # 0x27: "Door Transition Up",
     # 0x28: "Door Transition Down",
-    0x30: "Power Beam Door",
-    0x31: "Power Beam Door",
-    0x32: "Power Beam Door",
-    0x33: "Power Beam Door",
-    0x34: "Power Beam Door",
-    0x35: "Power Beam Door",
-    0x36: "Power Beam Door",
-    0x40: "Missile Door",
-    0x46: "Super Missile Door",
-    0x4C: "Power Bomb Door",
-
+    0x30: "L0 Hatch",
+    0x31: "L0 Hatch",
+    0x32: "L0 Hatch",
+    0x33: "L0 Hatch",
+    0x34: "L0 Hatch",
+    0x35: "L0 Hatch",
+    0x36: "L1 Hatch",
+    0x37: "L1 Hatch",
+    0x38: "L1 Hatch",
+    0x39: "L1 Hatch",
+    0x3a: "L1 Hatch",
+    0x3b: "L1 Hatch",
+    0x3c: "L4 Hatch",
+    0x3d: "L4 Hatch",
+    0x3e: "L4 Hatch",
+    0x3f: "Open Hatch", # TODO implement locked hatch
+    0x40: "L2 Hatch",
+    0x41: "L2 Hatch",
+    0x42: "L2 Hatch",
+    0x43: "L2 Hatch",
+    0x44: "L2 Hatch",
+    0x45: "L2 Hatch",
+    0x46: "L3 Hatch",
+    0x47: "L3 Hatch",
+    0x48: "L3 Hatch",
+    0x49: "L3 Hatch",
+    0x4a: "L3 Hatch",
+    0x4b: "L3 Hatch",
+    0x4c: "L4 Hatch",
+    0x4d: "L4 Hatch",
+    0x4e: "L4 Hatch",
 }
 
 def RLE_find_target_bytes_in_clip(rom: ROM, targets: dict[int, str]) -> list[ItemData]:
@@ -199,7 +217,7 @@ def parse_doors_for_area(rom: ROM, area: AreaData, all_rooms: list[RoomData]):
         dock_type: str = None
         door_type = None
         if len_x == 1 and len_y == 4:
-            dock_type = "door"
+            dock_type = "Door"
 
             Room.get_room(rom, area.idx, src_room).get_clip_data(rom)
             w = rom.stream.read_UInt8()
@@ -225,14 +243,14 @@ def parse_doors_for_area(rom: ROM, area: AreaData, all_rooms: list[RoomData]):
             
             # just make a basic dock if it's neither
             if not door_type:
-                dock_type = "dock"
-                door_type = "Access Open"
+                dock_type = "Door"
+                door_type = "Open Hatch"
         elif len_x == 1 and len_y == 1:
-            dock_type = "tunnel"
+            dock_type = "Other"
             door_type = "Tunnel"
         else:
-            dock_type = "dock"
-            door_type = "Access Open"
+            dock_type = "Other"
+            door_type = "Open Passage"
 
         all_rooms[src_room].door_data.append(DoorData(
             offset=hex(area.door_offset + (0xC * door_num)),
@@ -323,9 +341,9 @@ def add_door_dst_rooms(rom: ROM, all_areas: dict[int, list[RoomData]]):
                 
                 door.dst_room = dst_room
 
-def generate_all_areas() -> dict[int, list[RoomData]]:
+def generate_all_areas(rompath: str) -> dict[int, list[RoomData]]:
     # get the rom
-    path = Path(ROM_PATH)
+    path = Path(rompath)
     rom = ROM(path)
     all_areas: dict[int, list[RoomData]] = {}
 
@@ -350,19 +368,19 @@ def generate_all_areas() -> dict[int, list[RoomData]]:
 
 def idx_to_region(idx: int):
     if idx == 0:
-        return "Brinstar"
+        return "Main Deck"
     if idx == 1:
-        return "Kraid"
+        return "Sector 1"
     if idx == 2:
-        return "Norfair"
+        return "Sector 2"
     if idx == 3:
-        return "Ridley"
+        return "Sector 3"
     if idx == 4:
-        return "Tourian"
+        return "Sector 4"
     if idx == 5:
-        return "Crateria"
+        return "Sector 5"
     if idx == 6:
-        return "Chozodia"
+        return "Sector 6"
     raise ValueError("Bad idx!")
 
 def get_room_name(area: int, room: int):
@@ -403,7 +421,7 @@ def game_xy_to_rdv_coordinate(item, width_room: int, height_room: int) -> dict:
         "z": 0.0
     }
 
-def generate_area_json(area: AreaData, rooms: list[RoomData]):
+def generate_area_json(area: AreaData, rooms: list[RoomData], output: Path):
     global room_names
 
     res = {}
@@ -472,21 +490,21 @@ def generate_area_json(area: AreaData, rooms: list[RoomData]):
 
         res["areas"][room_name] = room
     
-    json_path = Path(DUMP_PATH).joinpath(f"{area.name}.json")
+    json_path = output.joinpath(f"{area.name}.json")
     with open(json_path, "w") as file:
         json.dump(res, file, indent=4)
 
 
-def convert_to_jsons(data: dict[int, list[RoomData]]):
+def convert_to_jsons(data: dict[int, list[RoomData]], output: Path):
     for area_idx, rooms in data.items():
         area = None
         for a in AREA_DATA.values():
             if a.idx == area_idx:
                 area = a
                 break
-        generate_area_json(area, rooms)
+        generate_area_json(area, rooms, output)
 
-def make_blank_room_name_json():
+def make_blank_room_name_json(roomjson: Path):
     res = {}
     for area in AREA_DATA.values():
         area_name = area.name
@@ -495,8 +513,7 @@ def make_blank_room_name_json():
             areadict[hex(roomidx)] = ""
         res[area_name] = areadict
     
-    json_path = Path(DUMP_PATH).joinpath(f"area_names_dict.json")
-    with open(json_path, "w") as file:
+    with open(roomjson, "w") as file:
         json.dump(res, file, indent=4)
 
 @dataclasses.dataclass
@@ -505,7 +522,7 @@ class PickupThingy:
     room: int
     item: ItemData
 
-def generate_location_data(data: dict[int, list[RoomData]]):
+def generate_location_data(data: dict[int, list[RoomData]], output: Path):
     items: list[PickupThingy] = []
 
     for area_idx, rooms in data.items():
@@ -532,22 +549,34 @@ def generate_location_data(data: dict[int, list[RoomData]]):
         res += f"\t),\n"
     res += "]\n"
 
-    py_path = Path(DUMP_PATH).joinpath("locations.py")
+    py_path = output.joinpath("locations.py")
     py_path.write_text(res)
 
-def main():
+def main(rom: str, output: str):
     # get room name dict if it exists
     global room_names
     global all_areas_data
-    if ROOM_NAME_JSON:
-        with open(Path(ROOM_NAME_JSON)) as f:
-            room_names = json.load(f)
 
-    all_areas_data = generate_all_areas()
-    convert_to_jsons(all_areas_data)
+    room_name_json = Path(output).joinpath("room_names.json")
 
-    generate_location_data(all_areas_data)
-main()
+    if not room_name_json.exists():
+        make_blank_room_name_json(room_name_json)
 
-# enable to generate a blank room name json in DUMP_PATH\area_names_dict.json
-# make_blank_room_name_json()
+    with open(Path(room_name_json)) as f:
+        room_names = json.load(f)
+
+    all_areas_data = generate_all_areas(rom)
+    convert_to_jsons(all_areas_data, Path(output))
+
+    generate_location_data(all_areas_data, Path(output))
+    print(rom)
+    print(output)
+
+
+if (__name__ == "__main__"):
+    parser = argparse.ArgumentParser(description="generate RDV logic database")
+    parser.add_argument('rom', metavar="ROM", type=str, help="the path to a metroid fusion (U) rom")
+    parser.add_argument('output', metavar="OUTPUT_DIR", type=str, help="the directory to output files")
+
+    args = parser.parse_args()
+    main(args.rom, args.output)
