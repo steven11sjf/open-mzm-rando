@@ -25,7 +25,7 @@ class ROM:
     
     def get_version(self):
         self.stream.seek(0xA0) # version string
-        self.version = str(self.stream._read(0x10))[2:-1] # trim off the b""
+        self.version = self.stream.read_String()
 
         if self.version not in OffsetForVersion:
             raise ValueError(f"The provided ROM ({self.path}) has unsupported version string {self.version}. "

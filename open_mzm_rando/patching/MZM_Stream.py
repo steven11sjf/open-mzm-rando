@@ -54,3 +54,8 @@ class MZM_Stream:
     
     def write_Pointer(self, ptr: int):
         self._write((ptr + 0x8000000).to_bytes(4, 'little'))
+
+    def read_String(self) -> str:
+        bytestr = self._read(16)
+        string = bytestr.decode("ascii")
+        return string.split('\0')[0]

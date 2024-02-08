@@ -7,7 +7,7 @@ from open_mzm_rando.patching.Room import Room
 from open_mzm_rando.patching.run_length_encoding import RLE_seek_target, RLEResult
 
 
-ROM_PATH = "e:/Roms/GBA/MZMU.gba" # Put your path here!
+ROM_PATH = "e:/Roms/GBA/MF.gba" # Put your path here!
 ROOM_NAME_JSON: str = "d:/randovania-dev/mzm_db_dumps/area_names_dict.json" # renames rooms to provided names
 DUMP_PATH = "d:/randovania-dev/mzm_db_dumps" # directory db dumps are sent to
 
@@ -61,72 +61,79 @@ class RoomData:
 all_areas_data: dict[int, list[RoomData]] = None
 
 AREA_DATA = {
-    "Brinstar": AreaData(
-        name="Brinstar",
+    "MainDeck": AreaData(
+        name="Main Deck",
         idx=0,
-        room_count=0x2A,
-        door_offset=0x33E608,
-        door_count=0x62,
+        room_count=0x57,
+        door_offset=0x3c0030,
+        door_count=0xcc,
     ),
-    "Kraid": AreaData(
-        name="Kraid",
+    "Sector1": AreaData(
+        name="Sector 1",
         idx=1,
-        room_count=0x2A,
-        door_offset=0x33EAAC,
-        door_count=0x6A,
+        room_count=0x36,
+        door_offset=0x3c09d8,
+        door_count=0x73,
     ),
-    "Norfair": AreaData(
-        name="Norfair",
+    "Sector2": AreaData(
+        name="Sector2",
         idx=2,
-        room_count=0x39,
-        door_offset=0x33EFB0,
-        door_count=0x84,
+        room_count=0x3d,
+        door_offset=0x3c0f48,
+        door_count=0x92,
     ),
-    "Ridley": AreaData(
-        name="Ridley",
+    "Sector3": AreaData(
+        name="Sector3",
         idx=3,
-        room_count=0x21,
-        door_offset=0x33F5EC,
-        door_count=0x4C,
+        room_count=0x27,
+        door_offset=0x3c162c,
+        door_count=0x5a,
     ),
-    "Tourian": AreaData(
-        name="Tourian",
+    "Sector4": AreaData(
+        name="Sector 4",
         idx=4,
-        room_count=0x14,
-        door_offset=0x33F988,
-        door_count=0x2B,
+        room_count=0x30,
+        door_offset=0x3c204c,
+        door_count=0x76,
     ),
-    "Cratera": AreaData(
-        name="Crateria",
+    "Sector5": AreaData(
+        name="Sector 5",
         idx=5,
-        room_count=0x16,
-        door_offset=0x33FB98,
-        door_count=0x34,
+        room_count=0x34,
+        door_offset=0x3c1a70,
+        door_count=0x7c,
     ),
-    "Chozodia": AreaData(
-        name="Chozodia",
+    "Sector6": AreaData(
+        name="Sector 6",
         idx=6,
-        room_count=0x63,
-        door_offset=0x33FE14,
-        door_count=0xF5,
+        room_count=0x29,
+        door_offset=0x3c25e0,
+        door_count=0x5e,
     )
 }
 
 CLIP_VALS = {
-    0x5C: "Energy Tank",
-    0x5D: "Missile Tank",
-    0x5E: "Super Missile Tank",
-    0x5F: "Power Bomb Tank",
-    0x6C: "Energy Tank",
-    0x6D: "Missile Tank",
-    0x6E: "Super Missile Tank",
-    0x6F: "Power Bomb Tank"
+    0x62: "Missile Tank",
+    0x63: "Energy Tank",
+    0x64: "Hidden Missile Tank",
+    0x65: "Hidden Energy Tank",
+    0x66: "Underwater Missile Tank",
+    0x67: "Underwater Energy Tank",
+    0x68: "Power Bomb Tank",
+    0x69: "Hidden Power Bomb Tank",
+    0x6a: "Underwater Power Bomb Tank",
 }
 
 DOOR_CLIPS = {
     # 0x20: "Door Transition",
     # 0x27: "Door Transition Up",
     # 0x28: "Door Transition Down",
+    0x30: "Power Beam Door",
+    0x31: "Power Beam Door",
+    0x32: "Power Beam Door",
+    0x33: "Power Beam Door",
+    0x34: "Power Beam Door",
+    0x35: "Power Beam Door",
     0x36: "Power Beam Door",
     0x40: "Missile Door",
     0x46: "Super Missile Door",
@@ -198,6 +205,7 @@ def parse_doors_for_area(rom: ROM, area: AreaData, all_rooms: list[RoomData]):
             w = rom.stream.read_UInt8()
             rom.stream.read_UInt16()
             pos = rom.stream.stream.tell()
+            
             # check left
             res = RLE_seek_target(rom, y1 * w + x1 - 1)
             if res == RLEResult.DECOMPRESSED:
@@ -205,7 +213,7 @@ def parse_doors_for_area(rom: ROM, area: AreaData, all_rooms: list[RoomData]):
                 t = rom.stream.read_UInt8()
                 if t in DOOR_CLIPS:
                     door_type = DOOR_CLIPS[t]
-            
+            # check right
             if not door_type:
                 rom.stream.seek(pos)
                 res = RLE_seek_target(rom, y1 * w + x1 + 1)
@@ -214,6 +222,8 @@ def parse_doors_for_area(rom: ROM, area: AreaData, all_rooms: list[RoomData]):
                     t = rom.stream.read_UInt8()
                     if t in DOOR_CLIPS:
                         door_type = DOOR_CLIPS[t]
+            
+            # just make a basic dock if it's neither
             if not door_type:
                 dock_type = "dock"
                 door_type = "Access Open"
@@ -265,9 +275,9 @@ def parse_rooms_for_area(rom: ROM, area: AreaData) -> list[RoomData]:
     return all_rooms
 
 def add_area_connections(rom: ROM, all_areas: dict[int, list[RoomData]]):
-    for area_conn_idx in range(0x19):
+    for area_conn_idx in range(0x22):
         # read conn data
-        rom.stream.seek(0x360274 + (area_conn_idx * 0x3))
+        rom.stream.seek(0x3c8b90 + (area_conn_idx * 0x3))
         print(hex(rom.stream.stream.tell()))
         src_area = rom.stream.read_UInt8()
         src_door = rom.stream.read_UInt8()
